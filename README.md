@@ -1,19 +1,22 @@
-# GH-SPRAY
+# GH-Spray
 
 A Rust implementation to draw custom patterns on your GitHub contribution graph.
 Based on github-spray (https://github.com/Annihil/github-spray).
 
-## FEATURES
-* Draw custom text on your GitHub contribution graph
-* Customize start date
-* Adjust contribution intensity with multiplier
-* Terminal visualization while creating commits
-* Simple CLI interface
+## Features
 
-## INSTALLATION
+- Draw custom text on your GitHub contribution graph
+- Customize start date
+- Adjust contribution intensity with multiplier
+- Terminal visualization while creating commits
+- Simple CLI interface
+
+## Installation
+
 `cargo install gh-spray`
 
-### USAGE
+### Usage
+
 `gh-spray -t "rust" [options]`
 
 ```
@@ -26,8 +29,10 @@ Options:
   -V, --version             Print version
 ```
 
-## EXAMPLE
+### Examples
+
 `gh-spray --text "rust" --startdate "2024-01-01" --multiplier 2`
 
-## LICENSE
+## License
+
 [MIT](LICENSE)
