@@ -11,6 +11,7 @@ pub fn get_alphabet(font: Option<Font>) -> HashMap<char, Vec<&'static str>> {
 
     match font {
         Some(f) => match f {
+            // i plan to add more fonts in the future
             Font::Mario => default_font(&mut alphabet),
             Font::Default => default_font(&mut alphabet),
         },
