@@ -28,10 +28,22 @@ struct Args {
 
     #[arg(short, long, value_parser = clap::builder::PossibleValuesParser::new(&["default", "mario", "lowercase"]))]
     font: Option<String>,
+
+    #[arg(short, long)]
+    dryrun: bool,
 }
 
 fn main() {
     let args = Args::parse();
+    let font = Font::new(args.font.as_deref().unwrap_or("default"));
+    let pattern = generate_pattern_from_text(&args.text, font);
+    let start_date = parse_start_date(args.startdate);
+
+    if args.dryrun {
+        show_preview(&pattern);
+        println!("Dry run preview shown above.");
+        return;
+    }
 
     let folder = format!(
         "spray-{}",
@@ -50,15 +62,35 @@ fn main() {
         .output()
         .expect("Failed to initialize git repo");
 
-    let font = Font::new(args.font.as_deref().unwrap_or("default"));
-    let pattern = generate_pattern_from_text(&args.text, font);
-
-    let start_date = parse_start_date(args.startdate);
     let commits = generate_commits(&folder, &pattern, start_date, args.multiplier);
 
     println!("Start date: {}", start_date);
     println!("Number of commits: {}", commits);
     println!("Done! Check the folder {}", folder);
+}
+
+fn show_preview(pattern: &[Vec<u32>]) {
+    let mut stdout = stdout();
+    stdout.execute(Hide).unwrap();
+    stdout.execute(Clear(ClearType::All)).unwrap();
+
+    let max_weeks = pattern[0].len();
+    for week in 0..max_weeks {
+        for day in 0..alphabet::WEEK_DAYS {
+            stdout.execute(MoveTo(week as u16, day as u16)).unwrap();
+            print!(
+                "{} ",
+                alphabet::CHARS[if pattern[day][week] > 0 { 3 } else { 0 }]
+            );
+            stdout.flush().unwrap();
+        }
+    }
+
+    stdout.execute(Show).unwrap();
+    stdout
+        .execute(MoveTo(0, alphabet::WEEK_DAYS as u16))
+        .unwrap();
+    stdout.flush().unwrap();
 }
 
 fn generate_pattern_from_text(text: &str, font: Font) -> Vec<Vec<u32>> {
