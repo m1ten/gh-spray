@@ -26,7 +26,7 @@ struct Args {
     #[arg(short, long, default_value = "1")]
     multiplier: u32,
 
-    #[arg(short, long, value_parser = clap::builder::PossibleValuesParser::new(&["default", "mario"]))]
+    #[arg(short, long, value_parser = clap::builder::PossibleValuesParser::new(&["default", "mario", "lowercase"]))]
     font: Option<String>,
 }
 
@@ -50,13 +50,8 @@ fn main() {
         .output()
         .expect("Failed to initialize git repo");
 
-    let pattern = generate_pattern_from_text(
-        &args.text,
-        args.font.map(|f| match f.to_ascii_lowercase().as_str() {
-            "mario" => Font::Mario,
-            _ => Font::Default,
-        }),
-    );
+    let font = Font::new(args.font.as_deref().unwrap_or("default"));
+    let pattern = generate_pattern_from_text(&args.text, font);
 
     let start_date = parse_start_date(args.startdate);
     let commits = generate_commits(&folder, &pattern, start_date, args.multiplier);
@@ -66,16 +61,15 @@ fn main() {
     println!("Done! Check the folder {}", folder);
 }
 
-fn generate_pattern_from_text(text: &str, font: Option<Font>) -> Vec<Vec<u32>> {
-    let alphabet = alphabet::get_alphabet(font);
+fn generate_pattern_from_text(text: &str, font: Font) -> Vec<Vec<u32>> {
+    let alphabet = font.get_patterns();
     let mut pattern = vec![String::new(); alphabet::WEEK_DAYS];
 
     for c in text.to_lowercase().chars() {
-        if let Some(letter) = alphabet.get(&c) {
-            // Add each row of the letter to our pattern
-            for (i, row) in letter.iter().enumerate() {
+        if let Some(letter) = alphabet.iter().find(|(ch, _)| *ch == c) {
+            for (i, row) in letter.1.iter().enumerate() {
                 pattern[i].push_str(row);
-                pattern[i].push(' '); // Add space between letters
+                pattern[i].push(' ');
             }
         } else {
             eprintln!("Warning: character '{}' not supported", c);

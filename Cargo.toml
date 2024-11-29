@@ -1,8 +1,8 @@
 [package]
 name = "gh-spray"
-version = "0.1.4"
+version = "0.2.0"
 edition = "2021"
-author = "miten"
+authors = ["miten"]
 description = "A tool to generate a lot of GitHub activity"
 license = "MIT"
 repository = "https://github.com/m1ten/gh-spray"
