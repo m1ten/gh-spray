@@ -27,7 +27,7 @@ struct Args {
     #[arg(short, long, default_value = "1")]
     multiplier: u32,
 
-    #[arg(short, long, value_parser = clap::builder::PossibleValuesParser::new(&["default", "mario", "lowercase"]))]
+    #[arg(short, long, value_parser = clap::builder::PossibleValuesParser::new(&["default"]))]
     font: Option<String>,
 
     #[arg(short, long)]
@@ -98,25 +98,23 @@ fn generate_pattern_from_text(text: &str, font: Font) -> Vec<Vec<u32>> {
     let alphabet = font.get_patterns();
     let mut pattern = vec![String::new(); alphabet::WEEK_DAYS];
 
-    for c in text.to_lowercase().chars() {
+    for c in text.chars() {
         if let Some(letter) = alphabet.iter().find(|(ch, _)| *ch == c) {
-            for (i, row) in letter.1.iter().enumerate() {
-                pattern[i].push_str(row);
-                pattern[i].push(' ');
+            for (j, row) in letter.1.iter().enumerate() {
+                pattern[j].push_str(row);
+                if c != ' ' && c != text.chars().last().unwrap() {
+                    pattern[j].push(' ');
+                }
             }
         } else {
             eprintln!("Warning: character '{}' not supported", c);
+            exit(1);
         }
     }
 
-    // Convert pattern strings to numbers
     pattern
-        .into_iter()
-        .map(|line| {
-            line.chars()
-                .map(|c| if c == ' ' || c == '0' { 0 } else { 1 })
-                .collect()
-        })
+        .iter()
+        .map(|row| row.chars().map(|c| (c == '1') as u32).collect())
         .collect()
 }
 
