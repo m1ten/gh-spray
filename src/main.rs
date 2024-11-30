@@ -3,6 +3,7 @@ use chrono::{DateTime, Datelike, Duration, Timelike, Utc};
 use clap::Parser;
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
+use std::process::exit;
 use std::{fs, process::Command};
 
 use crossterm::{
@@ -148,6 +149,25 @@ fn parse_start_date(date_str: Option<String>) -> DateTime<Utc> {
     .unwrap()
 }
 
+fn get_git_credentials() -> (String, String) {
+    let config = git2::Config::open_default().ok();
+    let name = config
+        .as_ref()
+        .and_then(|c| c.get_string("user.name").ok())
+        .unwrap_or_else(|| {
+            eprintln!("Warning: please set `git config --global user.name 'NAME'`");
+            exit(1);
+        });
+    let email = config
+        .as_ref()
+        .and_then(|c| c.get_string("user.email").ok())
+        .unwrap_or_else(|| {
+            eprintln!("Warning: please set `git config --global user.email 'EMAIL'`");
+            exit(1);
+        });
+    (name, email)
+}
+
 fn generate_commits(
     folder: &str,
     pattern: &[Vec<u32>],
@@ -155,6 +175,7 @@ fn generate_commits(
     multiplier: u32,
 ) -> usize {
     let repo = git2::Repository::open(folder).expect("Failed to open repository");
+    let (name, email) = get_git_credentials();
 
     // Create and commit initial README.md
     let readme = "# GitHub Contribution Graph Art\n\nCreated with gh-spray";
@@ -166,9 +187,7 @@ fn generate_commits(
 
     let tree_id = index.write_tree().unwrap();
     let tree = repo.find_tree(tree_id).unwrap();
-    let name = "GH Spray";
-    let email = "null@and.void";
-    let sig = git2::Signature::now(name, email).unwrap();
+    let sig = git2::Signature::now(&name, &email).unwrap();
 
     // Create initial commit
     repo.commit(Some("HEAD"), &sig, &sig, "Initial commit", &tree, &[])
@@ -199,8 +218,8 @@ fn generate_commits(
                 let tree_id = repo.index().unwrap().write_tree().unwrap();
                 let tree = repo.find_tree(tree_id).unwrap();
                 let sig = git2::Signature::new(
-                    name,
-                    email,
+                    &name,
+                    &email,
                     &git2::Time::new(current_date.timestamp(), 0),
                 )
                 .unwrap();
