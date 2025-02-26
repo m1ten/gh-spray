@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 Releases may yanked if there is a security bug, a soundness bug, or a regression.
 
+## 0.4.1
+
+- Updated `dependencies`.
+
 ## 0.3.0
 
 - Added support for `git` user config.
