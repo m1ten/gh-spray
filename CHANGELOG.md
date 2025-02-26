@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 Releases may yanked if there is a security bug, a soundness bug, or a regression.
 
-## 0.4.1
+## 0.4.2
 
 - Updated `dependencies`.
 
