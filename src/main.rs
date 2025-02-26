@@ -1,8 +1,8 @@
 use alphabet::Font;
 use chrono::{DateTime, Datelike, Duration, Timelike, Utc};
 use clap::Parser;
-use rand::distributions::Alphanumeric;
-use rand::{thread_rng, Rng};
+use rand::distr::Alphanumeric;
+use rand::{rng, Rng};
 use std::process::exit;
 use std::{fs, process::Command};
 
@@ -48,7 +48,7 @@ fn main() {
 
     let folder = format!(
         "spray-{}",
-        thread_rng()
+        rng()
             .sample_iter(&Alphanumeric)
             .take(5)
             .map(char::from)
@@ -176,7 +176,7 @@ fn generate_commits(
     let (name, email) = get_git_credentials();
 
     // Create and commit initial README.md
-    let readme = "# GitHub Contribution Graph Art\n\nCreated with gh-spray";
+    let readme = "# GitHub Contribution Graph Art\n\nCreated with [gh-spray](https://github.com/m1ten/gh-spray)";
     fs::write(format!("{}/README.md", folder), readme).expect("Failed to write README");
 
     let mut index = repo.index().unwrap();
