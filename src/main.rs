@@ -2,16 +2,16 @@ use alphabet::Font;
 use chrono::{DateTime, Datelike, Duration, Timelike, Utc};
 use clap::Parser;
 use rand::distr::Alphanumeric;
-use rand::{rng, Rng};
+use rand::{RngExt, rng};
 use std::process::exit;
 use std::{fs, process::Command};
 
 use crossterm::{
+    ExecutableCommand,
     cursor::{Hide, MoveTo, Show},
     terminal::{Clear, ClearType},
-    ExecutableCommand,
 };
-use std::io::{stdout, Write};
+use std::io::{Write, stdout};
 
 mod alphabet;
 
@@ -122,9 +122,12 @@ fn parse_start_date(date_str: Option<String>) -> DateTime<Utc> {
     match date_str {
         Some(date) => {
             let dt = DateTime::parse_from_rfc3339(&date)
-                .or_else(|_| DateTime::parse_from_str(&date, "%Y-%m-%d"))
-                .expect("Invalid date format. Use YYYY-MM-DD or RFC3339")
-                .with_timezone(&Utc);
+                .map(|dt| dt.with_timezone(&Utc))
+                .or_else(|_| {
+                    chrono::NaiveDate::parse_from_str(&date, "%Y-%m-%d")
+                        .map(|nd| nd.and_hms_opt(0, 0, 0).unwrap().and_utc())
+                })
+                .expect("Invalid date format. Use YYYY-MM-DD or RFC3339");
 
             let days_since_sunday = dt.weekday().num_days_from_sunday();
             dt - Duration::days(days_since_sunday as i64)
